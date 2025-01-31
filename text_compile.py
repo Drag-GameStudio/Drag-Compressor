@@ -105,23 +105,23 @@ class Text_Compiler:
 
 
 
-with open("test.txt", "r", encoding="utf-8") as file:
-    text = file.read()
+# with open("test.txt", "r", encoding="utf-8") as file:
+#     text = file.read()
 
-th = TextHandler(text)
-sd = th.calculate_symbols()
+# th = TextHandler(text)
+# sd = th.calculate_symbols()
 
-text_codec = th.code_symbols(sd)
-#print(text_codec)
-tc = Text_Compiler(text)
-code_symbols_str, len_symbols_array = tc.recompile_text(text_codec)
+# text_codec = th.code_symbols(sd)
+# #print(text_codec)
+# tc = Text_Compiler(text)
+# code_symbols_str, len_symbols_array = tc.recompile_text(text_codec)
 
-tb = text_byte_manager.TextByter(code_symbols_str, len_symbols_array)
-prepare_len_data = tb.prepare_len_data()
-print(len(prepare_len_data))
+# tb = text_byte_manager.TextByter(code_symbols_str, len_symbols_array)
+# prepare_len_data = tb.prepare_len_data()
+# print(len(prepare_len_data))
 
-splitter_symbols = tb.symbols_splitter_to_bytes()
-tb.save_symbols_splitter_bytes(splitter_symbols, "test_compress")
-compres_len, proc = tb.compress_len_data(prepare_len_data)
-byte_code_str = tb.code_compress_len_data(compres_len)
-tb.save_compress_len_data(byte_code_str, "test_compress")
+# splitter_symbols = tb.symbols_splitter_to_bytes()
+# tb.save_symbols_splitter_bytes(splitter_symbols, "test_compress")
+# compres_len, proc = tb.compress_len_data(prepare_len_data)
+# byte_code_str = tb.code_compress_len_data(compres_len)
+# tb.save_compress_len_data(byte_code_str, "test_compress")
