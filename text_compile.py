@@ -2,7 +2,7 @@ import json
 import math
 import numpy as np
 import text_byte_manager
-
+from py_progress.progress import ProgressBar
 
 class TextHandler:
     def __init__(self, text_data):
@@ -100,28 +100,117 @@ class Text_Compiler:
 
         return code_symbols_str, len_symbols_array
 
+
+class Bitshandler:
+    def __init__(self, main_text_bits, len_data_bits, codec_json):
+        self.main_text_bits = main_text_bits
+        self.len_data_bits = len_data_bits
+        self.codec_json = codec_json
+
+    def normilize_len_data(self):
+        normilize_len_data_array = []
+        for el in self.len_data_bits:
+            first_code = int(el[:3], 2)
+            index_1_code = -int(el[3])
+
+            second_code = int(el[4:7], 2)
+            index_2_code = -int(el[7])
+
+            current_array = [first_code, index_1_code, second_code, index_2_code]
+            normilize_len_data_array.append(current_array)
+
+        return normilize_len_data_array
+
+    def decompress_len_data(self, normilize_len_data_array):
+        len_data = []
+        for el in normilize_len_data_array:
+            for child_el_i in range(len(el)):
+                if el[child_el_i] == -1:
+                    len_data.append(el[child_el_i - 1])
+                else:
+                    if el[child_el_i] != 0:
+                        len_data.append(el[child_el_i])
+
+        return len_data
+
+    def flatten(self, array):
+        flatten_array = []
+        for i in range(len(array)):
+            for j in range(len(array[i])):
+                flatten_array.append(array[i][j])
+        
+        return flatten_array
+
+    def get_keys_by_value(self, value):
+        for key in list(self.codec_json.keys()):
+            if self.codec_json[key] == value:
+                return key
+
+    def decompress_text_data(self, len_data):
+        flatten_text_bits = self.flatten(self.main_text_bits)
+        codes_text = []
+        pb = ProgressBar(len(len_data))
+
+
+        for curr_len in len_data:
+            new_arr = flatten_text_bits[:curr_len]
+            byte_code = ""
+            for el in new_arr:
+                byte_code += el
+
+            codes_text.append(self.get_keys_by_value(byte_code))
+            flatten_text_bits = flatten_text_bits[curr_len:]
             
+            pb.progress_with_time(" ")
+
+        return codes_text
+
+    def compose_text(self, text_array):
+        all_text = ""
+        for el in text_array:
+            all_text += str(el)
+        
+        return all_text
+
+class ByteReader:
+    def __init__(self, input_path):
+        self.input_path = input_path
+
+    def read_bytes_file(self):
+        with open(f"{self.input_path}/main_text.bin", "rb") as f:
+            main_text_byte = f.read()  
+
+        with open(f"{self.input_path}/len_data.bin", "rb") as f:
+            len_data_byte = f.read()
+
+        with open(f"{self.input_path}/codec.json", "r", encoding="utf-8") as f:
+            codec_json = json.load(f)
             
+        return main_text_byte, len_data_byte, codec_json
+
+    def from_byte_to_bit(self, bytes_bcode):
+        bytes_array = list(bytes_bcode)
+        bits_array = []
+
+        for byte_element in bytes_array:
+            bits_array.append(format(byte_element, "08b"))
+
+        return bits_array
+
+
+if __name__ == "__main__":
+    br = ByteReader("test_compress")
+    main_text_byte, len_data_byte, codec_json = br.read_bytes_file()
+
+    main_text_bits = br.from_byte_to_bit(main_text_byte)
+    len_data_bits = br.from_byte_to_bit(len_data_byte)
+
+    bh = Bitshandler(main_text_bits, len_data_bits, codec_json)
+    normilize_len_data_array = bh.normilize_len_data()
+    len_data = bh.decompress_len_data(normilize_len_data_array)
+
+    text_array = bh.decompress_text_data(len_data)
+    print(bh.compose_text(text_array))
 
 
 
-# with open("test.txt", "r", encoding="utf-8") as file:
-#     text = file.read()
-
-# th = TextHandler(text)
-# sd = th.calculate_symbols()
-
-# text_codec = th.code_symbols(sd)
-# #print(text_codec)
-# tc = Text_Compiler(text)
-# code_symbols_str, len_symbols_array = tc.recompile_text(text_codec)
-
-# tb = text_byte_manager.TextByter(code_symbols_str, len_symbols_array)
-# prepare_len_data = tb.prepare_len_data()
-# print(len(prepare_len_data))
-
-# splitter_symbols = tb.symbols_splitter_to_bytes()
-# tb.save_symbols_splitter_bytes(splitter_symbols, "test_compress")
-# compres_len, proc = tb.compress_len_data(prepare_len_data)
-# byte_code_str = tb.code_compress_len_data(compres_len)
-# tb.save_compress_len_data(byte_code_str, "test_compress")

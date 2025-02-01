@@ -27,36 +27,38 @@ class TextByter:
         return format(number, '03b')
     
     def prepare_len_data(self):
-        compress_array = [] #add -1, 0 4 len
+        compress_array = [] 
 
-        curr_compress = []
+        curr_compress = [] #add -1, 0 4 len
+        offset = 0
+        i = 0
+        while i < len(self.len_symbols_array) - offset:
 
-        for i in range(len(self.len_symbols_array)):
             if len(curr_compress) == 4:
                 compress_array.append(curr_compress)
                 curr_compress = []
             
             else:
-                if i == len(self.len_symbols_array) - 1:
+                if i == len(self.len_symbols_array) - 1 - offset:
                     for j in range(4 - len(curr_compress)):
                         curr_compress.append(-2)
                     compress_array.append(curr_compress)
                     continue
-                    
 
             if len(curr_compress) in (0, 2):
-                curr_compress.append(self.len_symbols_array[i])
-                continue
+                curr_compress.append(self.len_symbols_array[i + offset])
             
-            if len(curr_compress)  in (1, 3):
-                if i < len(self.len_symbols_array) - 1:
-                    if curr_compress[0] == self.len_symbols_array[i + 1]:
+            else:
+                if i < len(self.len_symbols_array) - 1 - offset:
+                    offset -= 1
+
+                    if curr_compress[len(curr_compress)-1] == self.len_symbols_array[i + offset + 1]:
                         curr_compress.append(-1)
                     else:
                         curr_compress.append(0)
-                
-                continue
 
+            i += 1
+                
         return compress_array
 
     def flatten(self, array):
@@ -101,7 +103,7 @@ class TextByter:
         for x in compress_data:
             new_data = []
             for i in range(len(x)):
-                if i in (0, 2):
+                if i in (0, 2) and x[i] != -2:
                     new_data.append(self.parse_int_to_3bit(x[i]))
                 else:
                     if x[i] != -2:
@@ -110,6 +112,7 @@ class TextByter:
                         new_data.append(0)
 
             with_code.append(new_data)
+
 
         byte_code_str = []
         for el in with_code:
