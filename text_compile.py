@@ -78,7 +78,6 @@ class TextHandler:
 
         return new_codec
             
-            
 class Text_Compiler:
     def __init__(self, text_data: str):
         self.text_data = text_data
@@ -110,10 +109,10 @@ class Bitshandler:
     def normilize_len_data(self):
         normilize_len_data_array = []
         for el in self.len_data_bits:
-            first_code = int(el[:3], 2)
+            first_code = int(el[:3], 2) + 1
             index_1_code = -int(el[3])
 
-            second_code = int(el[4:7], 2)
+            second_code = int(el[4:7], 2) + 1
             index_2_code = -int(el[7])
 
             current_array = [first_code, index_1_code, second_code, index_2_code]
